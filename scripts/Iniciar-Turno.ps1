@@ -16,8 +16,10 @@ if ($line) { $port = [int]($line.Split('=')[1]) }
 $url = "http://localhost:$port"
 node scripts/check-api.mjs $url
 if ($LASTEXITCODE -ne 0) { throw 'Falló la comprobación de reservas.' }
-$date = (Get-Date).AddDays(30).ToString('yyyy-MM-dd')
+$date = [DateTime]::UtcNow.AddDays(30).ToString('yyyy-MM-dd')
+if ((Invoke-RestMethod "$url/api/health" ).mode -ne 'java') { throw 'El frontend no esta conectado a Java.' }
 $before = @(Invoke-RestMethod "$url/api/bookings?date=$date")
+if ($before.Count -lt 1) { throw 'No hay datos para comprobar persistencia.' }
 docker compose stop
 if ($LASTEXITCODE -ne 0) { throw 'No se pudo detener el proyecto.' }
 docker compose up -d --wait
