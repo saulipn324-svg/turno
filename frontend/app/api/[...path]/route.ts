@@ -4,7 +4,7 @@ const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache
 async function handle(request:Request){const u=new URL(request.url);const path=u.pathname.replace('/api/','');const e=env as unknown as {DB:D1Database;TURNO_API_BASE?:string};
 if(request.method!=='GET'&&request.headers.get('origin')!==u.origin)return json({message:'Origen no permitido.'},403);
 if(!/^(bookings|bookings\/[0-9a-f-]{36}\/cancel|health)$/.test(path))return json({message:'Ruta no encontrada.'},404);
-if(e.TURNO_API_BASE){try {const r=await fetch(e.TURNO_API_BASE+'/api/'+path+u.search,{method:request.method,headers:{'Content-Type':'application/json'},body:request.method==='GET'?undefined:await request.text(),redirect:'error',signal:AbortSignal.timeout(10000)});return new Response(await r.text(),{status:r.status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}})}catch{return json({message:'No se pudo conectar con el servidor. Intenta de nuevo.'},503)}}
+if(e.TURNO_API_BASE){try {const r=await fetch(e.TURNO_API_BASE+'/api/'+path+u.search,{method:request.method,headers:{'Content-Type':'application/json'},body:request.method==='GET'?undefined:await request.text(),redirect:'manual',signal:AbortSignal.timeout(10000)});if(r.status>=300&&r.status<400)return json({message:'El servidor devolvió una redirección inesperada.'},502);return new Response(await r.text(),{status:r.status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}})}catch{return json({message:'No se pudo conectar con el servidor. Intenta de nuevo.'},503)}}
 const db=e.DB;
 try{
 if(path==='health'&&request.method==='GET'){await db.prepare('SELECT 1').first();return json({status:'UP',mode:'hosted'})}
