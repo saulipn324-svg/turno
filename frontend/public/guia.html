@@ -1,0 +1,118 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Turno · Documentación</title><style>body{font:16px/1.75 system-ui,sans-serif;color:#172439;background:#f4f6fa;max-width:900px;margin:auto;padding:36px 24px}h1,h2,h3{line-height:1.25;letter-spacing:-.025em}h1{color:#2457e4;font-size:34px;margin-top:44px}a{color:#2457e4}pre{background:#e7edf8;padding:18px;overflow:auto;border-radius:8px}table{border-collapse:collapse;width:100%;display:block;overflow:auto}td,th{text-align:left;border:1px solid #ccd6e6;padding:10px}hr{border:0;border-top:1px solid #ccd6e6;margin:48px 0}code{font-size:14px}</style><a href="/">← Abrir Turno</a><h1>Turno · Sistema de reservas</h1>
+<p>Segundo proyecto del portafolio de <strong>Saul Ramos Sanchez</strong>. Una aplicación para reservar salas en bloques de 30 minutos sin permitir solapamientos.</p>
+<h2>Funcionalidad</h2>
+<ul>
+<li>Dos salas independientes, fechas dentro de 90 días y jornadas de 09:00 a 18:00 en Ciudad de México.</li>
+<li>Reservas de 30, 60 o 90 minutos; consulta de agenda y cancelación idempotente.</li>
+<li>Validación en cliente y servidor, errores 400/404/409, transacciones y restricción única por sala/fecha/bloque.</li>
+<li>Interfaz responsive con React, TypeScript, Tailwind y componentes accesibles.</li>
+</ul>
+<h2>Dos entornos del mismo producto</h2>
+<p>La demo alojada usa un Worker y D1 (SQLite) con almacenamiento real. La versión local usa la misma interfaz, una API Java 21 / Spring Boot 3.5, JDBC, Flyway y PostgreSQL 17. No se afirma que Java se ejecute dentro de Sites. Cada entorno conserva su propia base de datos; no hay sincronización entre ellos.</p>
+<p>Es una agenda compartida de demostración: no tiene cuentas ni roles. Cualquier participante con acceso al sitio puede ver o cancelar reservas. Utiliza datos ficticios. El despliegue local se limita a 127.0.0.1; añadir autenticación y autorización es necesario antes de abrir la API a una organización.</p>
+<h2>Inicio con Docker</h2>
+<p>Requisitos: Docker Desktop abierto y Node 24 para el script de comprobación.</p>
+<p>Desde la carpeta <code>turno</code>, ejecutar <code>powershell -ExecutionPolicy Bypass -File .\scripts\Iniciar-Turno.ps1</code>. La excepción de ejecución aplica únicamente a ese proceso. El script genera <code>.env</code> si no existe, inicia los contenedores y comprueba las reservas. Abre <a href="http://localhost:3004">http://localhost:3004</a>. No afecta al puerto 3002 de Issueflow.</p>
+<p>Inicio manual: copia <code>.env.example</code> a <code>.env</code>, sustituye la contraseña y ejecuta <code>docker compose up --build -d --wait</code>. Detener con <code>docker compose stop</code>; iniciar de nuevo con <code>docker compose up -d --wait</code>. Los datos permanecen en el volumen <code>turno_postgres-data</code>.</p>
+<h2>Desarrollo</h2>
+<p>Backend: JDK 21, Maven 3.9; <code>cd backend</code> y <code>mvn spring-boot:run</code>. Usa H2 en archivo por defecto. <code>mvn test</code> ejecuta siete pruebas de integración; <code>mvn -Ppostgres verify</code> añade las mismas siete contra PostgreSQL real mediante Testcontainers (requiere Docker).</p>
+<p>Frontend: <code>cd frontend</code>, <code>npm ci</code>, <code>npm run db:migrate</code>, <code>npm run dev -- --port 3003</code>. Usa D1 local. Para conectarlo a Java, crea <code>.dev.vars</code> con <code>TURNO_API_BASE=http://127.0.0.1:8080</code> y reinicia el servidor. <code>npm run typecheck</code>, <code>npm test</code> y <code>npm run build</code> verifican la entrega.</p>
+<h2>Documentación</h2>
+<ul>
+<li><a href="#arquitectura">Arquitectura y decisiones</a></li>
+<li><a href="#api">Contrato HTTP</a></li>
+<li><a href="#manual">Manual de uso</a></li>
+<li><a href="#pruebas">Pruebas y limitaciones</a></li>
+<li><a href="#presentacion">Guion para presentar el proyecto</a></li>
+</ul>
+<p>Las migraciones versionadas son la única fuente del esquema: Flyway para Java, Drizzle para D1. Los secretos y datos locales se excluyen del repositorio.</p>
+<hr><h1 id="manual">Manual de uso</h1>
+<ol>
+<li>Selecciona Sala Norte (6 personas) o Sala Sur (10).</li>
+<li>Elige fecha y duración. Todos los horarios usan Ciudad de México.</li>
+<li>Pulsa un horario disponible. Los atenuados están ocupados, ya pasaron o no dejan espacio suficiente antes del cierre.</li>
+<li>Escribe el motivo y un nombre ficticio de equipo; revisa el resumen y confirma.</li>
+<li>La reserva aparece en la agenda de la fecha seleccionada.</li>
+<li>Para liberarla, pulsa Cancelar y confirma. Permanece visible como cancelada.</li>
+</ol>
+<p>Si otro participante ocupa el mismo intervalo mientras completas el formulario, verás un aviso. Pulsa Actualizar y selecciona otro horario. Si falla la conexión al guardar, consulta la agenda antes de repetir la reserva.</p>
+<p>La demo guarda los datos en el servidor. Cambiar entre el sitio alojado y Docker muestra agendas distintas. La aplicación no envía correos ni reservas reales de espacios físicos.</p>
+<hr><h1 id="arquitectura">Arquitectura</h1>
+<h2>Flujo</h2>
+<p>Navegador → <code>/api/bookings</code> (Worker). En Sites, la ruta consulta D1; con <code>TURNO_API_BASE</code>, delega por HTTP a Spring Boot → PostgreSQL. El navegador siempre usa rutas del mismo origen. El proxy permite únicamente las rutas del contrato y restringe escrituras al origen esperado. Los valores no se interpolan en SQL; todas las consultas están parametrizadas.</p>
+<h2>Prevención de conflictos</h2>
+<p><code>bookings</code> conserva motivo, nombre, horario y estado. <code>slots</code> contiene una fila por cada bloque ocupado. La combinación <code>(room, date, start)</code> es única. Una reserva de 90 minutos ocupa tres filas.</p>
+<p>Crear una reserva inserta el registro y sus bloques en una transacción: <code>@Transactional</code> en Java y <code>DB.batch</code> atómico en D1. Dos solicitudes concurrentes pueden ver disponibilidad, pero únicamente una consigue la restricción única. La otra obtiene 409; sus inserciones parciales se revierten. No se depende de una comprobación previa en memoria.</p>
+<p>Cancelar cambia el estado y elimina los bloques en una transacción. Java bloquea la reserva con <code>SELECT ... FOR UPDATE</code> para serializar cancelaciones. Repetir la cancelación devuelve éxito. La agenda conserva el historial cancelado.</p>
+<h2>Decisiones</h2>
+<ul>
+<li>JDBC hace explícito el SQL y el límite transaccional; no se introduce ORM donde no aporta valor.</li>
+<li>Los intervalos son semiabiertos: 10:00–11:00 y 11:00–11:30 son compatibles.</li>
+<li>La agenda usa minutos desde medianoche; no admite intervalos que crucen el cierre.</li>
+<li>Java usa <code>America/Mexico_City</code>; la demo usa UTC−06:00 para esta ubicación sin cambio estacional. Revisar esta equivalencia si cambian las reglas horarias o se añaden sedes.</li>
+<li>Los entornos implementan el mismo contrato y comparten una prueba HTTP reproducible; no comparten código de reglas ni datos. Los cambios de negocio requieren mantener ambas implementaciones.</li>
+<li>La agenda recupera como máximo 500 registros por fecha. Para un servicio de uso prolongado añadir paginación del historial y política de retención.</li>
+</ul>
+<h2>Alcance de seguridad</h2>
+<p>Demo compartida sin autenticación de aplicación. El acceso alojado depende de los permisos de Sites y se publica inicialmente privado. No hay pagos, notificaciones ni datos personales requeridos. El entorno Docker no publica PostgreSQL ni Java al host y expone solo el frontend en loopback. El control de origen del proxy reduce escrituras desde otros sitios, pero no reemplaza autenticación.</p>
+<hr><h1 id="api">Contrato HTTP</h1>
+<p>Todas las respuestas son JSON con <code>Cache-Control: no-store</code> en el proxy. Base: <code>/api</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Método</th>
+<th>Ruta</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GET</td>
+<td><code>/health</code></td>
+<td>200: estado y modo (<code>hosted</code> o <code>java</code>)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/bookings?date=AAAA-MM-DD</code></td>
+<td>200: agenda de ambas salas, incluye canceladas</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/bookings</code></td>
+<td>201: reserva creada; 400: validación; 409: conflicto</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/bookings/{uuid}/cancel</code></td>
+<td>200: cancelada, también si ya lo estaba; 404: no existe</td>
+</tr>
+</tbody></table>
+<p>Cuerpo de creación:</p>
+<pre><code class="language-json">{&quot;room&quot;:&quot;norte&quot;,&quot;date&quot;:&quot;2026-09-10&quot;,&quot;start&quot;:600,&quot;duration&quot;:60,&quot;title&quot;:&quot;Planeación del equipo&quot;,&quot;name&quot;:&quot;Equipo creativo&quot;}
+</code></pre>
+<p>Sustituye la fecha del ejemplo por una fecha futura. <code>start</code> representa minutos desde medianoche (600 = 10:00). <code>room</code>: norte o sur. <code>duration</code>: 30, 60 o 90. El motivo admite 3–80 caracteres y el nombre 2–60 después de quitar espacios exteriores. La respuesta agrega <code>id</code> y <code>status: CONFIRMED</code>.</p>
+<p>Error: <code>{&quot;message&quot;:&quot;Ese horario acaba de ocuparse. Elige otro.&quot;}</code>. Ante un 409, vuelve a consultar la agenda. Los clientes no deben reintentar automáticamente una creación después de un fallo de red: no hay clave de idempotencia para crear; consulta primero la agenda. La cancelación sí es idempotente.</p>
+<p>Para llamar al proxy desde un cliente HTTP en escrituras se requiere el encabezado <code>Origin</code> igual al origen del frontend. Java directo está pensado para la red interna de Docker.</p>
+<hr><h1 id="pruebas">Pruebas y evidencia</h1>
+<p>Validación realizada el 2 de septiembre de 2026:</p>
+<ul>
+<li>Java: 7 pruebas JUnit con H2 aprobadas, incluyendo carrera entre dos hilos, rollback de inserción parcial, cancelación repetida, adyacencia y validación.</li>
+<li>Prueba HTTP <code>node scripts/check-api.mjs URL</code>: aprobada contra D1 local y contra la API Java ejecutada con H2 en archivo. Dos creaciones simultáneas producen exactamente 201 y 409.</li>
+<li>Frontend: cuatro pruebas de reglas y comprobación TypeScript incluidas en los comandos npm.</li>
+<li>PostgreSQL: suite <code>PostgresIT</code> preparada para ejecutarse con Docker mediante <code>mvn -Ppostgres verify</code>; pendiente de ejecución en el equipo del usuario.</li>
+</ul>
+<p>El entorno restringido del asistente produce un error de acceso al cerrar archivos JAR en Maven. Las clases generadas se ejecutaron mediante JUnit Console, con siete éxitos; esto no se presenta como una ejecución Maven completa. La compilación y prueba convencional se incluye en Docker y CI.</p>
+<p>Docker Compose está preparado, pero no se ha ejecutado desde el asistente porque Docker Desktop no es accesible a este proceso. El script de inicio comprueba el flujo HTTP y persistencia tras reinicio en el equipo del usuario.</p>
+<p>La integración WebMCP prepara el formulario sin confirmar reservas. Requiere <code>document.modelContext</code>; no se dispone de un contexto de validación compatible, por lo que no se afirma haberla verificado. No se realizó prueba visual automatizada de navegador.</p>
+<p>El script HTTP usa una fecha a 30 días, se detiene si ya contiene reservas activas y cancela únicamente los registros que crea. Conserva el historial cancelado.</p>
+<hr><h1 id="presentacion">Cómo presentar Turno</h1>
+<p>“Construí un sistema de reservas para resolver conflictos de disponibilidad. El usuario selecciona una sala, fecha y duración. La API Java valida la solicitud y ocupa bloques de media hora dentro de una transacción. Una restricción única impide que dos peticiones concurrentes reserven el mismo intervalo.”</p>
+<h2>Demostración de tres minutos</h2>
+<ol>
+<li>Crea una reserva de 90 minutos y muestra cómo desaparecen los horarios que se superponen.</li>
+<li>Reserva en otra sala al mismo tiempo: las salas son independientes.</li>
+<li>Cancela y vuelve a reservar el intervalo para mostrar la liberación.</li>
+<li>Explica el test concurrente: dos hilos, un éxito, un conflicto y ninguna inserción parcial.</li>
+</ol>
+<p>Tecnologías: Java 21, Spring Boot, JDBC, Flyway, PostgreSQL, JUnit, Testcontainers, React, TypeScript, Tailwind, Docker y una demo Worker/D1. Presentar únicamente las verificaciones efectivamente ejecutadas; no afirmar una arquitectura de microservicios ni autenticación que el proyecto no implementa.</p>
+<p>La siguiente evolución razonable sería añadir identidad, propiedad de reservas e idempotencia de creación, antes de incorporar notificaciones o más sedes.</p>
+</html>

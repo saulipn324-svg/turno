@@ -1,0 +1,137 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+:root,.dark{--background:#f4f6fa;--foreground:#172439;--card:#fff;--card-foreground:#172439;--popover:#fff;--popover-foreground:#172439;--primary:#2457e4;--primary-foreground:#fff;--secondary:#e9efff;--secondary-foreground:#2445a1;--muted:#edf1f7;--muted-foreground:#58667b;--accent:#e9efff;--accent-foreground:#183da8;--border:#dce3ed;--input:#ccd6e6;--ring:#2457e4;--destructive:#b22e3c;--radius:.7rem}
+body{margin:0;background:var(--background);color:var(--foreground);font-family:var(--font-geist-sans),Arial,sans-serif;font-size:16px}main{max-width:1280px;margin:auto;padding:0 40px}header{height:96px;display:flex;align-items:center;gap:40px;border-bottom:1px solid var(--border)}header a{display:flex;align-items:center;gap:8px;font-size:14px}header a:last-child{margin-left:auto}.brand{font-size:34px!important;font-weight:800;color:#2457e4;gap:12px!important}.brand span{font-size:24px;color:#172439}.header-note{color:#58667b;font-size:14px}.intro{display:flex;align-items:center;justify-content:space-between;padding:46px 0 34px}.eyebrow{font-size:12px;letter-spacing:.12em;font-weight:650;color:#526682;margin:0 0 18px}h1{font-size:44px;line-height:1.17;letter-spacing:-.045em;font-weight:650;margin:0}h1 span{color:#6c7b90;font-size:32px;font-weight:400}.demo{border:1px solid #cad7f9;color:#3053a9;padding:8px 13px;border-radius:30px;font-size:13px}.workspace{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(290px,1fr);gap:24px;align-items:start}.availability{padding:30px;background:white;border:1px solid var(--border);border-radius:16px}h2{font-size:21px;font-weight:600;letter-spacing:-.025em;margin:0}h3{font-weight:600;font-size:16px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.section-title h2{display:flex;align-items:center;gap:10px}.section-title span{font-size:12px;color:#667791}.rooms{display:grid;grid-template-columns:1fr 1fr;gap:12px}.room{border:1px solid var(--border);border-radius:10px;padding:18px;cursor:pointer}.room.active{background:#f2f6ff;border-color:#2457e4;box-shadow:0 0 0 1px #2457e4}.room div{display:flex;align-items:center;gap:10px}.room p{display:flex;gap:6px;align-items:center;font-size:14px;margin:14px 0 5px}.room span{font-size:12px;color:#63728b}.filters{display:flex;gap:24px;align-items:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:28px 0;padding:22px 0}.filters label{font-size:14px;display:grid;gap:7px}.filters p{display:flex;align-items:center;gap:8px;font-size:14px;color:#526682}input{border:1px solid #ccd6e6;border-radius:6px;padding:10px;background:white;font:inherit;color:inherit;min-width:0}.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.slots button{height:44px;font-size:15px}.slots button.selected{background:#2457e4;color:white;border-color:#2457e4}.muted{font-size:14px;color:#5b6c85;line-height:1.65;margin-top:20px}aside{padding:30px;border-radius:16px;background:#e9effd;border:1px solid #d6e1fc}aside h2{font-size:30px;line-height:1.25}.summary{margin-top:28px;padding:24px 0;border-top:1px solid #cbd8f3;border-bottom:1px solid #cbd8f3;color:#2457e4}.summary p{color:#344971;font-size:15px;margin-top:12px}footer{display:flex;justify-content:space-between;color:#65748a;font-size:12px;padding:35px 0}button,a,input{touch-action:manipulation}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #2457e4;outline-offset:3px}@media(max-width:850px){main{padding:0 20px}.workspace{grid-template-columns:1fr}.header-note{display:none}.intro{gap:15px;align-items:start}h1{font-size:36px}h1 span{font-size:25px}.demo{max-width:100px}footer{gap:20px}.section-title{flex-wrap:wrap}}@media(max-width:480px){.availability,aside{padding:20px}.rooms{grid-template-columns:1fr}.slots{grid-template-columns:repeat(3,1fr)}.filters{flex-wrap:wrap}.intro{display:block}.demo{display:inline-block;max-width:none;margin-top:16px}header{gap:10px}h1{font-size:32px}h1 span{font-size:24px}footer span{display:none}}
+fieldset{border:0;margin:0;padding:0;min-width:0}legend{display:flex;align-items:center;gap:6px;font-size:14px;margin-bottom:10px}.durations{display:flex;flex-wrap:wrap;gap:14px}.durations label{display:flex;align-items:center;gap:5px;font-size:14px}.filters{justify-content:space-between}.day-nav{display:flex;gap:6px}.summary span{font-size:14px;color:#526682}form{display:grid;gap:16px;margin-top:24px}form label{display:grid;gap:7px;font-size:14px}.confirm{width:100%;height:46px;font-size:15px;margin-top:6px}.agenda{margin-top:30px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:30px}.agenda .eyebrow{margin-bottom:8px}.empty{display:flex;gap:18px;align-items:center;padding:25px 0;color:#63728b}.empty p{font-size:14px;margin-top:4px}.booking-list article{display:flex;align-items:center;gap:20px;padding:20px 0;border-top:1px solid var(--border)}.booking-time{font-size:20px;font-weight:600;min-width:70px}.booking-time span{display:block;font-size:14px;font-weight:400;color:#63728b}.booking-info{flex:1;min-width:0;overflow-wrap:anywhere}.booking-info p{font-size:14px;color:#63728b;margin-top:4px}.status{font-size:13px;color:#26664d;background:#e9f4ed;padding:5px 9px;border-radius:25px}.cancelled{opacity:.65}.cancelled .status{color:#63728b;background:#edf1f7}.message{padding:18px 22px;display:flex;align-items:center;gap:12px;margin-top:20px;border-radius:10px;font-size:15px}.message.error{background:#fff0f0;color:#9e2433}.message.success{background:#e8f4ef;color:#235f47}.message button{margin-left:auto}.slots button:disabled{background:#f4f6fa;color:#8a96a8;opacity:1;border-color:#e5eaf2;text-decoration:line-through}@media(max-width:550px){.agenda{padding:20px}.booking-list article{flex-wrap:wrap;gap:12px}.booking-info{min-width:150px}.message{flex-wrap:wrap}.filters{gap:18px}.status{margin-left:82px}}

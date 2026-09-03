@@ -1,0 +1,51 @@
+name: turno
+services:
+  db:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: turno
+      POSTGRES_USER: turno
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U turno -d turno']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+  backend:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/turno
+      DB_USER: turno
+      DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, curl, --fail, --silent, http://127.0.0.1:8080/actuator/health]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+      retries: 12
+    restart: unless-stopped
+  frontend:
+    build: ./frontend
+    environment:
+      TURNO_API_BASE: http://backend:8080
+      WRANGLER_SEND_METRICS: 'false'
+    ports:
+      - '127.0.0.1:${FRONTEND_PORT:-3004}:3000'
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health').then(async r=>{if(!r.ok||(await r.json()).mode!=='java')process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+    restart: unless-stopped
+volumes:
+  postgres-data:
