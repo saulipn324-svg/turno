@@ -38,3 +38,7 @@ Frontend: `cd frontend`, `npm ci`, `npm run db:migrate`, `npm run dev -- --port 
 - [Guion para presentar el proyecto](docs/presentacion.md)
 
 Las migraciones versionadas son la única fuente del esquema: Flyway para Java, Drizzle para D1. Los secretos y datos locales se excluyen del repositorio.
+
+## Organización del código
+
+Consulta [la arquitectura y sus decisiones](docs/ARQUITECTURA.md).

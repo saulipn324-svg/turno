@@ -1,4 +1,6 @@
 package com.saul.turno;
+import com.saul.turno.application.BookingService;
+import com.saul.turno.domain.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
